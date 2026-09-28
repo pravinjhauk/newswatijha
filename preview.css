@@ -1,0 +1,60 @@
+body { margin: 0; }
+.sj-example { overflow-wrap: break-word; }
+.preview-note { padding: .5rem var(--sj-gutter); background: var(--sj-ink); color: white; font: 500 .8125rem/1.5 var(--sj-font-body); text-align: center; }
+.site-header { background: white; border-bottom: 1px solid var(--sj-border); }
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 5rem; padding-block: 1rem; }
+.brand { min-width: 0; }
+.brand strong { display:block; font: 600 var(--sj-text-wordmark)/1.2 var(--sj-font-display); letter-spacing: -.015em; }
+.brand span { display: block; margin-top: .375rem; font-size: .875rem; line-height: 1.5; }
+.desktop-nav { display: none; gap: 1.5rem; align-items: center; }
+.desktop-nav a:not(.sj-button) { font-size: 1rem; font-weight: 600; min-height: 3rem; display: inline-flex; align-items: center; }
+.compact-menu { flex: 0 0 auto; }
+.compact-menu summary { padding: .75rem; min-height: 3rem; border: 1px solid var(--sj-control-border); border-radius: .75rem; font-size: 1rem; cursor: pointer; }
+.compact-menu[open] { position: relative; }
+.compact-menu nav { position: absolute; right: 0; width: min(18rem, calc(100vw - 2rem)); background: white; padding: 1.5rem; border: 1px solid var(--sj-border); border-radius: .75rem; box-shadow: var(--sj-shadow-2); z-index: 20; }
+.compact-menu nav a { display: block; padding-block: .75rem; font-size: 1rem; }
+.hero-copy .sj-eyebrow { margin-bottom: .75rem; color: var(--sj-plum); }
+.hero-copy .sj-display { margin-bottom: 1.5rem; }
+.hero-copy .sj-lead { margin-bottom: 1.5rem; }
+.hero-copy .sj-actions { margin-block: 1.5rem 1rem; }
+.locations-line { font-size: .875rem; line-height: 1.6; color: var(--sj-muted); }
+.topic-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+.topic { display: inline-flex; align-items: center; min-height: 3rem; padding: .5rem 1rem; gap: .625rem; border-radius: 999px; background: var(--sj-lilac); font-size: .875rem; line-height: 1.5; color: var(--sj-ink); }
+.topic i { width: .625rem; height: .625rem; border-radius: 50%; background: var(--sj-plum); }
+.topic.turquoise { background: var(--sj-turquoise-tint); }
+.topic.turquoise i { background: var(--sj-teal); }
+.topic.orange { background: var(--sj-orange-tint); }
+.topic.orange i { background: var(--sj-warning); }
+.portrait-figure { margin: 0; }
+.portrait-figure figcaption { text-align: center; margin-top: .75rem; font-size: .875rem; color: var(--sj-muted); }
+.specimens { border-top: 1px solid var(--sj-border); background: white; }
+.specimens h2 { margin-bottom: 1rem; }
+.specimens .intro { max-width: 65ch; margin-bottom: 2rem; }
+.palette { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; margin-block: 2rem 3rem; }
+.swatch { border: 1px solid var(--sj-border); border-radius: .75rem; overflow: hidden; }
+.swatch i { display:block; height: 4rem; background: var(--swatch); }
+.swatch span { display:block; padding: .75rem; font-size: .875rem; line-height: 1.5; }
+.component-grid { display: grid; gap: 2rem; }
+.specimen-panel { padding: 1.5rem; border: 1px solid var(--sj-border); border-radius: 1.25rem; min-width: 0; }
+.specimen-panel h3 { margin-bottom: 1.5rem; }
+.specimen-panel .sj-field { margin-top: 1.5rem; }
+.specimen-panel small { display: block; margin-top: 1rem; font-size: .875rem; }
+.demo-accordion { border-top: 1px solid var(--sj-border); padding-block: 1rem; }
+.demo-accordion summary { min-height: 3rem; cursor: pointer; font-size: 1.125rem; font-weight: 600; }
+.demo-accordion p { margin-top: 1rem; }
+.example-footer { padding-block: 3rem; background: var(--sj-ink); color: white; }
+.example-footer p { font-size: 1rem; margin-bottom: .75rem; }
+.sj-example .example-footer a { color: white; }
+.skip { position: absolute; top: .5rem; left: 1rem; transform: translateY(-200%); z-index: 100; background: white; padding: .75rem; }
+.skip:focus { transform: none; }
+@media (max-width: 47.999rem) { .brand span { display:none; } }
+@media (min-width: 48rem) {
+  .palette { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .component-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (min-width: 80rem) {
+  .desktop-nav { display: flex; }
+  .compact-menu { display:none; }
+  .header-inner { min-height: 6rem; }
+  .palette { grid-template-columns: repeat(6,minmax(0,1fr)); }
+}

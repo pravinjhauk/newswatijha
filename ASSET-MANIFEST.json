@@ -1,0 +1,98 @@
+{
+  "version": "1.1",
+  "date": "2026-09-28",
+  "approved_generated_production_assets": [],
+  "assets": [
+    {
+      "path": "assets/fonts/fonts.css",
+      "bytes": 4431,
+      "sha256": "7b1a2b337ef8af3b8842283681d802bfc492b15bb93d4fe2fb0403281f996c19",
+      "kind": "supporting asset metadata/style/licence",
+      "status": "included"
+    },
+    {
+      "path": "assets/fonts/lora-OFL.txt",
+      "bytes": 4423,
+      "sha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "kind": "supporting asset metadata/style/licence",
+      "status": "included"
+    },
+    {
+      "path": "assets/fonts/lora-latin-ext.woff2",
+      "bytes": 20176,
+      "sha256": "55606fbc76dc232c5beb8ef584d7b4f7f76e31a9f27877112e75484356462781",
+      "kind": "font",
+      "status": "specified in handoff; locally bundled",
+      "licence": "SIL Open Font License; included files",
+      "source_record": "references/font-provenance.json"
+    },
+    {
+      "path": "assets/fonts/lora-latin.woff2",
+      "bytes": 37792,
+      "sha256": "6b102ab35aa1f2b315788bb4853434ed1e52137603bf7a3da71a682276748d45",
+      "kind": "font",
+      "status": "specified in handoff; locally bundled",
+      "licence": "SIL Open Font License; included files",
+      "source_record": "references/font-provenance.json"
+    },
+    {
+      "path": "assets/fonts/plus-jakarta-sans-latin-ext.woff2",
+      "bytes": 21688,
+      "sha256": "0303e02b53b0298fb26a0193941a2e8754f0f9a9fce50d90b178d8da3424873f",
+      "kind": "font",
+      "status": "specified in handoff; locally bundled",
+      "licence": "SIL Open Font License; included files",
+      "source_record": "references/font-provenance.json"
+    },
+    {
+      "path": "assets/fonts/plus-jakarta-sans-latin.woff2",
+      "bytes": 27272,
+      "sha256": "cd8db90cd950e26bc8761f65d323588bd5cd112d326d6d322bc7c8ea86771215",
+      "kind": "font",
+      "status": "specified in handoff; locally bundled",
+      "licence": "SIL Open Font License; included files",
+      "source_record": "references/font-provenance.json"
+    },
+    {
+      "path": "assets/fonts/plusjakartasans-OFL.txt",
+      "bytes": 4402,
+      "sha256": "995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99",
+      "kind": "supporting asset metadata/style/licence",
+      "status": "included"
+    },
+    {
+      "path": "assets/icons.svg",
+      "bytes": 1240,
+      "sha256": "9bcca13b0a6be1a9e4956004c3ecb79dea57873d291926202761f30f917319b0",
+      "kind": "editable UI icon sprite",
+      "status": "new implementation resource for review",
+      "source": "original simple geometric paths in this handoff",
+      "licence": "CC0-1.0"
+    },
+    {
+      "path": "assets/images/professor-swati-jha.jpg",
+      "bytes": 92266,
+      "sha256": "014935e4bbb737ac188be91704265f2f44c17a1719031f719231c624cbe6457d",
+      "kind": "authentic photograph",
+      "source": "https://www.swatijha.com/wp-content/uploads/2026/04/portrait_600px_height.jpg",
+      "source_page": "https://www.swatijha.com/",
+      "width": 453,
+      "height": 600,
+      "status": "portrait replacement requested by user; existing site asset",
+      "use": "hero and profile",
+      "rights": "existing practice photograph; original rights retained"
+    },
+    {
+      "path": "references/03-plum-turquoise-original-concept.png",
+      "bytes": 854498,
+      "sha256": "1c47afa6efca65098a9a261093c38519f9b544db1d3d41d9d5771fda70476897",
+      "width": 1024,
+      "height": 688,
+      "kind": "generated historical concept reference",
+      "status": "palette direction selected; ribbon and generated logo excluded from production",
+      "production_asset": false,
+      "source": "Higgsfield generation 12d1ae87-6b73-40c8-ac64-7b1244e168cc",
+      "retrieval": "local file sufficient; job access not required"
+    }
+  ]
+}
