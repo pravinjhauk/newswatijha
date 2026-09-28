@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "revision": "7a6e788d9780c3a863bd54fa322dccd23eea047e",
+  "artifacts": [
+    {
+      "file": "swatijha-theme-0.1.0.zip",
+      "bytes": 281201,
+      "sha256": "a0f32a3e72b55c96042a3717449a3a57078fb315345f2d75f2bb9320e0e58456"
+    },
+    {
+      "file": "swatijha-core-0.1.0.zip",
+      "bytes": 42313,
+      "sha256": "8f39f3d184f9b30316cd83e6d9601641591aa505e87e0924fe2f278d4bef18db"
+    }
+  ]
+}

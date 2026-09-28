@@ -1,0 +1,206 @@
+{
+  "passed": 40,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "Theme is active",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "All 10 entity types registered",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "All dynamic blocks registered",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Stable UUID generated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Initial verified clinician can be approved and released",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Entity release requires and accepts verified clinician",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Unreviewed page cannot be released",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Reviewed page can be released",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Direct published content edit is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Published clinical flag cannot bypass protection",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Published clinical deletion is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Change draft created",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Draft edit leaves published content intact",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Future medical review date rejected",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Draft approval succeeds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Changed revision invalidates approval",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Approved replacement promoted",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Promotion retains original URL and page ID",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Graph generated from approved entities",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Graph has no localhost identifiers",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "No automatic review stars",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Wrong relationship target rejected",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Unsafe source scheme rejected",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Unapproved URL map blocks migration",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Enquiry disabled in local environment",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Content editor cannot approve clinical records",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Anonymous catalogue access denied",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Anonymous entity REST access denied",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Private editorial audit not in public REST",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Entity can be revised without losing its UUID",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Published specialty changes cannot bypass review",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Approved synthetic dry run proposes without writes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Synthetic import creates drafts only",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Synthetic import is idempotent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Unresolved import relationship rolls back",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "All plugin PHP parses on PHP 8.3",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Approved revision identifies the published narrative",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Private evidence can be saved on a change draft",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Anonymous private evidence access denied",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Native REST editor can save typed relationships",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

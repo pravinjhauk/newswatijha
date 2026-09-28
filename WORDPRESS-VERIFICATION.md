@@ -7,6 +7,7 @@
 - Node.js 22.23.3 source build completed. Dependency versions and lockfile are committed.
 - JavaScript lint, CSS lint and formatting checks pass.
 - Five build/migration-boundary tests pass, including local assets, package version pins, asset budgets and the still-pending real migration map.
+- Installation from the actual theme/plugin ZIPs also passes all 40 integration checks. Release checksums and source revision are recorded in `verification/wordpress/release-manifest.json`.
 - Forty integration checks pass on WordPress **7.1.2** and **6.6**, both using PHP 8.3 and SQLite in disposable installations.
 - All 17 browser acceptance tests pass in the final combined run.
 - Responsive behaviour is checked at 320, 390, 479, 480, 767, 768, 1023, 1024, 1279, 1280, 1440 and 1920 pixels. Tests cover overflow, portrait size, compact-menu operation and Escape/focus return.
