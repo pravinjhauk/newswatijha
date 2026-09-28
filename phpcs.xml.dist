@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<ruleset name="Swati Jha"><description>WordPress security and interoperability checks</description><file>wp-content/plugins/swatijha-core</file><file>wp-content/themes/swatijha-theme/functions.php</file><exclude-pattern>*/build/*</exclude-pattern><rule ref="WordPress-Extra"/><config name="minimum_supported_wp_version" value="6.6"/></ruleset>

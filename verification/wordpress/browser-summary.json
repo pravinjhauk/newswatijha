@@ -1,0 +1,182 @@
+{
+  "stats": {
+    "startTime": "2026-09-28T12:09:22.910Z",
+    "duration": 32394.321,
+    "expected": 17,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "name": "Native homepage blocks validate and clinical controls are available",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 10047
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 320px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1557
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 390px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1226
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 479px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 976
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 480px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1077
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 767px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1032
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 768px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 946
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1023px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 948
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1024px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1078
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1279px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1347
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1280px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 2380
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1440px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1129
+        }
+      ]
+    },
+    {
+      "name": "responsive layout 1920px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 927
+        }
+      ]
+    },
+    {
+      "name": "accessibility 390px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1432
+        }
+      ]
+    },
+    {
+      "name": "accessibility 768px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1346
+        }
+      ]
+    },
+    {
+      "name": "accessibility 1440px",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1276
+        }
+      ]
+    },
+    {
+      "name": "local privacy and dependency isolation",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1904
+        }
+      ]
+    }
+  ]
+}

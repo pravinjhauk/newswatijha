@@ -1,0 +1,23 @@
+{
+  "environment": "Local WordPress Playground, PHP 8.3, SQLite; mobile Lighthouse lab run",
+  "scores": {
+    "performance": 0.98,
+    "accessibility": 1,
+    "best-practices": 1
+  },
+  "metrics": {
+    "largest-contentful-paint": {
+      "display": "2.3\u00a0s",
+      "value": 2302.85655
+    },
+    "cumulative-layout-shift": {
+      "display": "0",
+      "value": 0
+    },
+    "total-blocking-time": {
+      "display": "10\u00a0ms",
+      "value": 14
+    }
+  },
+  "timestamp": "2026-09-28T12:08:57.681Z"
+}

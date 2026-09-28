@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sj/practice-contact",
+  "version": "0.1.0",
+  "title": "Practice contact",
+  "category": "widgets",
+  "icon": "heart",
+  "description": "Structured practice content. Select verified records in the block settings.",
+  "textdomain": "swatijha-core",
+  "attributes": {
+    "entityIds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "default": []
+    },
+    "heading": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "usesContext": ["postId"],
+  "supports": {
+    "html": false
+  },
+  "editorScript": "sj-editor",
+  "style": "sj-blocks"
+}

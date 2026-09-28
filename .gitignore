@@ -1,2 +1,13 @@
 .DS_Store
 __pycache__/
+node_modules/
+.tools/
+.local/
+dist/
+coverage/
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+vendor/

@@ -1,0 +1,1 @@
+export default {extends:['stylelint-config-standard'],rules:{'selector-class-pattern':null,'custom-property-pattern':null,'font-family-name-quotes':'always-where-recommended','declaration-property-value-no-unknown':null}};

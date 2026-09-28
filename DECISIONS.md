@@ -15,3 +15,7 @@
 Only the selected concept is retained locally as a historical reference. Its ribbon imagery and generated logo are excluded from production assets. The other five exploratory concepts were not approved and are not part of the production handoff.
 
 Production coding, migration and launch remain separate approval gates. The architecture proposal is documentation only.
+
+## Architecture approved; local implementation
+
+The user's “Yes” approves Gate A of the WordPress proposal. Build the owned theme, core plugin and Gutenberg library locally. It does not approve the pending URL map, real content migration, enquiry activation or live deployment. The workstation uses Node 22.23.3 and a disposable WordPress Playground/PHP 8.3 environment because native PHP/Docker are absent. Docker/MySQL staging parity remains to be verified.

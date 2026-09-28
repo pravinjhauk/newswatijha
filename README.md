@@ -33,3 +33,7 @@ The current parent workspace was not a Git repository. This handoff is kept in a
 ## Approval update — WordPress production proposal request
 
 The user has now declared the visual-design phase complete and the approved designs authoritative, retaining the authentic-portrait correction and Higgsfield-independence requirement. Earlier pending visual-sign-off notes are superseded by that instruction. Production architecture is proposed in `wordpress-proposal/WORDPRESS-PRODUCTION-PROPOSAL.md`; coding, migration and deployment remain separate approval gates.
+
+## Native WordPress implementation
+
+Architecture approval has now authorised local implementation. See [WordPress implementation handover](WORDPRESS-IMPLEMENTATION.md) and [verification results](WORDPRESS-VERIFICATION.md). Production source is under `wp-content/`; the original static specimen remains a design reference. Content migration and deployment remain separate approval gates.
