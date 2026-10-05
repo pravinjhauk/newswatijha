@@ -37,6 +37,31 @@ First confirm which GoDaddy product hosts the live site: **cPanel Web Hosting** 
 12. **Deploy pipeline (optional, later):** GitHub Action deploying tagged releases to staging over SFTP, with staging credentials only, stored as GitHub secrets.
 13. Work through `STAGING-ACCEPTANCE-CHECKLIST.md` sections 0–2.
 
+### Phase 1 status — 5 October 2026 (no credentials recorded here)
+
+| Step | Status | Evidence / note |
+|---|---|---|
+| 1 Backup of live site | ✅ (owner confirmed) | Taken before the WordPress install |
+| 2 Subdomain | ✅ | cPanel: `new.swatijha.com`, document root `/home/<account>/new.swatijha.com`, not shared with `public_html` |
+| 3 DNS | ✅ no change needed | `new.swatijha.com` already resolved to the hosting IP; no DNS records edited |
+| 4 SSL | ✅ | AutoSSL certificate for `new.swatijha.com`, expires 3 Jan 2027 (`www.new` fails DCV; not used) |
+| 5 PHP | ⚠️ 8.4, not 8.3 | Host blocks per-domain PHP (site isolation denied); account-wide 8.4, same as production |
+| 6 Database | ✅ | Database `newswatijha`; user `pravinjhanew` with privileges on that database only |
+| 7 Lock | ✅ | Directory Privacy on `new.swatijha.com`, realm "Staging", one login (`.htpasswds/new.swatijha.com/passwd`) |
+| 8 WordPress | ✅ | WordPress 7.1.2 installed manually; `$table_prefix = 'sjn_'`; `WP_ENVIRONMENT_TYPE` staging; `DISALLOW_FILE_EDIT` true; `SJ_STAGING_MAIL_TO` set |
+| 9 Release | ✅ | `swatijha-core` and `swatijha-theme` 0.2.0 installed and active; source ZIPs match `dist/release-manifest.json` (SHA-256 and size), tag `v0.2.0` |
+| 10 Accounts | 🟡 partial | `pravinjha` (Administrator), `pj-editor` (Clinical content editor), `pj-reviewer` (Clinical reviewer). To do: change their emails to `+editor`/`+reviewer` aliases; rename reviewer to Prof Jha; link to clinician record once created; publisher and migration operator accounts before Phase 4 |
+| 11 Practice settings | ✅ | Production canonical origin `https://www.swatijha.com` (verified after reload); delegated review attestation off |
+| 12 Deploy pipeline | ⏸ later | Optional |
+| 13 Checklist §0–2 | 🟡 in progress | See below |
+
+Checklist §0–2 position:
+- §0: H1–H4 closed (55c8a4a) ✅ · URL map signed ❌ (Phase 2) · checksums ✅ · basic auth ✅ · staging env, no production keys ✅ · mail capture test ❌ not yet sent
+- §1: PHP 8.4 matches production ✅ (extensions not yet recorded) · remaining items not started
+- §2: fresh install with plugin then theme ✅ (debug.log not yet checked) · only `swatijha-core`/`swatijha-theme` present, WordPress defaults removed ✅ (no fallback theme) · network-log and deactivation tests not started
+
+Housekeeping: empty `wordpress/` folder and `wordpress-7.1.2.zip` still in the staging root, to be moved to Trash.
+
 ## Phase 2 — Evidence and URL map sign-off (Gate B, parallel with Phase 1)
 
 Read-only on the live site:
