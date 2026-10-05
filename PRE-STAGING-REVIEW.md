@@ -3,7 +3,25 @@
 28 September 2026 · Release 0.1.0 · Branch `feature/native-wordpress` @ `30f8edd`
 Static code review only. No code changed, no live site touched, no migration run.
 
-## Verdict
+## Status update — 5 October 2026 (release 0.2.0)
+
+| Item | Status | Resolution |
+|---|---|---|
+| H1 | Closed | Every primitive capability of the ten entity types maps to an owned capability; editor/reviewer/publisher run the full change → request → approve → release cycle as separate non-admin accounts in the integration suite. |
+| H2 | Closed | Accounts are linked to a clinician record by an administrator (logged in `sj_identity_log`). Approval counts only as the reviewer's own linked clinician. Delegated attestation exists but is **off by default** (Practice settings) and needs a written attestation. The approver cannot release the same revision; an administrator override needs a recorded reason. Audit entries record user name, linked clinician, reviewer entity, mode, attestation and override reason. |
+| H3 | Closed | `seo_title`, `robots` (index/noindex) and `social_image_id` fields; document title, robots, Open Graph image/locale/site name, `og:type` article for posts, Twitter card; noindex pages excluded from the sitemap; the importer carries `seo_title`/`seo_description`/`robots` but never review dates or reviewers. |
+| H4 | Closed | `tooling/redirects.mjs` generates `.htaccess` rules from the signed map and refuses any unapproved row; single hop to the canonical origin; host/protocol rules apply to production hostnames only. `tooling/check-redirects.mjs` requests every old URL and checks status, destination and one hop. |
+| M1 | Closed | Clinical template or a bound entity makes a page clinical automatically; only a reviewer can clear the flag. |
+| M2 | Closed | Featured image, template and menu order are locked, hashed and carried through change drafts. |
+| M3 | Closed | Release locks older than five minutes are treated as abandoned. |
+| M4 | Closed | Versioned role reconciliation runs on `init`; plugin ZIP replacement now reaches existing installs. |
+| M5 | Closed | Registered meta is edit-context only in REST; anonymous users endpoint, users sitemap, author archives and oEmbed author data removed; XML-RPC disabled (and 403 at server via the URL map). |
+| M7 | Closed | Non-production mail is captured as administrator-only "Captured mail" (14-day retention); on staging, `SJ_STAGING_MAIL_TO` sends copies to one nominated address only. |
+| M6, M8–M10, Low | Open | Not blocking staging. M6 before any enquiry activation; M10 at staging. |
+
+Verification: 77/77 integration checks on WordPress 7.1.2 and 6.6, 12/12 unit tests, 17/17 browser tests.
+
+## Verdict (original, 28 September)
 
 The architecture is sound and the clinical workflow is more rigorous than most commercial builds. It is **not ready for staging** until the four high-severity items below are closed. H1–H2 affect the medicolegal integrity of clinical review; H3–H4 are prerequisites for any migration dry run.
 

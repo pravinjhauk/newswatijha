@@ -1,5 +1,14 @@
 # Local WordPress verification
 
+## Release 0.2.0 — 5 October 2026
+
+- 77/77 integration checks on WordPress 7.1.2 and 6.6 (PHP 8.3, SQLite), now run as separate content editor, clinical reviewer and publisher accounts.
+- 12/12 unit tests, including redirect generation from a synthetic signed map and a one-hop checker test against a local server.
+- 17/17 browser tests (editor sidebar, 12 breakpoints, axe at 390/768/1440, dependency isolation).
+- Lint, CSS lint and formatting pass. MySQL/MariaDB parity is still a staging check.
+
+## Release 0.1.0 — 28 September 2026
+
 28 September 2026 · Release 0.1.0 · No live-site tests or changes
 
 ## Completed checks

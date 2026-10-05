@@ -27,6 +27,10 @@ Files: `URL-MAP-FOR-APPROVAL.csv` (41 rows) and `MEDIA-INVENTORY.csv` (192 uploa
 4. **Content decision on `/vaginal-prolapse-signs/`**: fold its unique content into `/symptoms/`, or keep it as a guide.
 5. **Mesh wording.** The flagship page's clinical sign-off still depends on resolving the homepage/page-spec conflict with Professor Jha. It does not block the URL map, but it does block migrating that page.
 
+## Redirect generation
+
+After signing, `npm run redirects` writes `dist/redirects.htaccess` from this CSV. It refuses to run while any row is not `APPROVED`, and every address row needs an explicit `redirect_code` of `301`, `410`, `403` or `none`; S01–S05 are currently blank and must be filled when signing. Amended dispositions go into `redirect_code`/`new_url`, with `approval` still `APPROVED`. Rank Math redirects are added as extra rows. `npm run redirects -- --preview` shows the unsigned proposal, marked DO NOT DEPLOY.
+
 ## To approve
 
 Fill `approval` = `APPROVED` (or your amended disposition), `approved_by` and `approved_on` on every row. A single blanket "approved" is not enough: the importer refuses any manifest in which a row is not individually approved. Signing the map authorises a **dry run on local/staging only**. Applying content and redirects remains a separate instruction.

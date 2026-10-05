@@ -17,6 +17,8 @@
     "format": "prettier --write wp-content tooling tests",
     "assets:build": "node tooling/images.mjs",
     "package": "node tooling/package.mjs",
+    "redirects": "node tooling/redirects.mjs",
+    "check:redirects": "node tooling/check-redirects.mjs",
     "test:migration": "node --test tests/unit/migration.test.mjs",
     "lint:css": "stylelint \"wp-content/**/editor/*.css\" \"wp-content/themes/**/assets/css/components.css\"",
     "test:performance": "node tooling/performance.mjs",

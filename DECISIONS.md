@@ -19,3 +19,7 @@ Production coding, migration and launch remain separate approval gates. The arch
 ## Architecture approved; local implementation
 
 The user's “Yes” approves Gate A of the WordPress proposal. Build the owned theme, core plugin and Gutenberg library locally. It does not approve the pending URL map, real content migration, enquiry activation or live deployment. The workstation uses Node 22.23.3 and a disposable WordPress Playground/PHP 8.3 environment because native PHP/Docker are absent. Docker/MySQL staging parity remains to be verified.
+
+## Reviewer identity (H2) — 5 October 2026
+
+Default adopted pending explicit instruction: a clinical approval counts only as the clinician linked to the approving user's own account. Delegated attestation is implemented but switched off; an administrator can enable it in Practice settings, after which each delegated approval needs a written attestation naming who reviewed, when and how. Approver and releaser must differ; an administrator override requires a recorded reason. Staging is hosted on GoDaddy in the same account as the live site, isolated as set out in `ROADMAP.md`.
