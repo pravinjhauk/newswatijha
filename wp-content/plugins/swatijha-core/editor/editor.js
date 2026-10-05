@@ -287,7 +287,10 @@ function EditorialPanel() {
   const [busy, setBusy] = useState(false);
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [reviewer, setReviewer] = useState(0);
+  const [reviewer, setReviewer] = useState(config.linkedClinician || 0);
+  const [delegated, setDelegated] = useState(false);
+  const [attestation, setAttestation] = useState("");
+  const [override, setOverride] = useState("");
   const refresh = () =>
     apiFetch({ path: `/swatijha/v1/editorial/${id}` })
       .then(setState)
@@ -312,7 +315,13 @@ function EditorialPanel() {
       const result = await apiFetch({
         path: `/swatijha/v1/editorial/${id}/${action}`,
         method: "POST",
-        data: { reviewed_on: date, reviewer_id: reviewer },
+        data: {
+          reviewed_on: date,
+          reviewer_id: delegated ? reviewer : config.linkedClinician,
+          delegated,
+          attestation: delegated ? attestation : "",
+          override_reason: override,
+        },
       });
       if (result.edit_url) window.location.assign(result.edit_url);
       else {
@@ -350,21 +359,49 @@ function EditorialPanel() {
           value: date,
           onChange: setDate,
         }),
-        h(SelectControl, {
-          label: "Reviewer",
-          value: reviewer,
-          options: [
-            { label: "Select reviewer", value: 0 },
-            ...catalogue
-              .filter(
-                (item) =>
-                  item.type === "sj_clinician" &&
-                  (item.verified || item.id === id),
-              )
-              .map((item) => ({ label: item.title, value: item.id })),
-          ],
-          onChange: (v) => setReviewer(Number(v)),
-        }),
+        config.linkedClinician
+          ? h(
+              "p",
+              {},
+              `You approve as: ${
+                catalogue.find((item) => item.id === config.linkedClinician)
+                  ?.title || "your linked clinician"
+              }`,
+            )
+          : h(
+              Notice,
+              { status: "warning", isDismissible: false },
+              "Your account is not linked to a clinician record. Ask an administrator to link it in your user profile.",
+            ),
+        config.allowDelegated &&
+          h(CheckboxControl, {
+            label: "Record a review carried out by another clinician",
+            checked: delegated,
+            onChange: setDelegated,
+          }),
+        delegated &&
+          h(SelectControl, {
+            label: "Clinician who carried out the review",
+            value: reviewer,
+            options: [
+              { label: "Select clinician", value: 0 },
+              ...catalogue
+                .filter(
+                  (item) =>
+                    item.type === "sj_clinician" &&
+                    (item.verified || item.id === id),
+                )
+                .map((item) => ({ label: item.title, value: item.id })),
+            ],
+            onChange: (v) => setReviewer(Number(v)),
+          }),
+        delegated &&
+          h(TextareaControl, {
+            label: "Attestation",
+            help: "Who reviewed this content, when, and how you received their approval. Saved permanently in the audit trail.",
+            value: attestation,
+            onChange: setAttestation,
+          }),
         h(
           Button,
           {
@@ -413,6 +450,14 @@ function EditorialPanel() {
       "Request clinical review",
     ),
     reviewControls,
+    config.canPublish &&
+      config.canOverride &&
+      h(TextareaControl, {
+        label: "Override reason (only if you also approved this revision)",
+        help: "Approver and releaser should be different people. An administrator may override with a reason, which is recorded.",
+        value: override,
+        onChange: setOverride,
+      }),
     config.canPublish &&
       h(
         Button,

@@ -15,7 +15,17 @@ final class Editorial {
         foreach(['added','updated','deleted'] as $operation) add_action($operation.'_post_meta',[self::class,'changed_meta'],10,4);
         foreach(array_merge(['page','post'],array_keys(Model::TYPES)) as $type) add_filter('rest_pre_insert_'.$type,[self::class,'rest_guard'],99,2);
     }
-    public static function clinical(int $id): bool { return isset(Model::TYPES[get_post_type($id)]) || (bool)Model::get($id,'clinical'); }
+    public const LOCK_TTL = 300;
+    /** Core fields outside _sj_ meta that still change what a published clinical page shows. */
+    public const PRESENTATION_META = ['_thumbnail_id','_wp_page_template'];
+    public static function clinical(int $id): bool {
+        $type = get_post_type($id);
+        if (isset(Model::TYPES[$type]) || (bool)Model::get($id,'clinical')) return true;
+        // Clinical template or a bound condition/treatment makes a page clinical without relying on a checkbox.
+        return in_array($type,['page','post'],true) && (get_page_template_slug($id)==='page-clinical' || Model::landing_entities($id));
+    }
+    /** WordPress user account → sj_clinician record, set by an administrator. */
+    public static function linked_clinician(int $user=0): int { return (int)get_user_meta($user ?: get_current_user_id(),'sj_clinician_id',true); }
     public static function locked(int $id): bool { return self::clinical($id) && get_post_status($id)==='publish'; }
     public static function guard_terms(int $id,$terms,array $tt_ids,string $taxonomy,bool $append,array $old_tt_ids): void {
         if(self::$promoting || $taxonomy!=='sj_specialty') return;
@@ -30,14 +40,18 @@ final class Editorial {
     public static function guard_post(array $data,array $postarr,array $unsanitized,bool $update): array {
         if(self::$promoting || ($data['post_type']??'')==='revision') return $data;
         $id=(int)($postarr['ID']??0); $old=$id?get_post($id):null;
-        if($old && self::locked($id)) foreach(['post_title','post_content','post_excerpt','post_name','post_status','post_parent','post_date','post_date_gmt'] as $key) $data[$key]=wp_slash($old->$key);
-        $clinical=isset(Model::TYPES[$data['post_type']??'']) || ($id && self::clinical($id)) || !empty($postarr['meta_input']['_sj_clinical']);
+        if($old && self::locked($id)) foreach(['post_title','post_content','post_excerpt','post_name','post_status','post_parent','post_date','post_date_gmt','menu_order'] as $key) $data[$key]=wp_slash($old->$key);
+        $clinical=isset(Model::TYPES[$data['post_type']??'']) || ($id && self::clinical($id)) || !empty($postarr['meta_input']['_sj_clinical']) || ($postarr['page_template']??'')==='page-clinical';
         if($clinical && ($data['post_status']??'')==='publish' && (!$old || $old->post_status!=='publish')) $data['post_status']='pending';
         return $data;
     }
     public static function guard_meta($check,int $id,string $key,$value,$unused=null) {
-        if(self::$promoting || wp_is_post_revision($id) || !str_starts_with($key,'_sj_')) return $check;
+        if(self::$promoting || wp_is_post_revision($id)) return $check;
+        if(in_array($key,self::PRESENTATION_META,true)) return self::locked($id) ? false : $check;
+        if(!str_starts_with($key,'_sj_')) return $check;
         if(self::locked($id)) return false;
+        // Only a clinical reviewer may declassify a page; the delete operation passes no new value.
+        if($key==='_sj_clinical' && Model::get($id,'clinical') && (!$value || current_filter()==='delete_post_metadata') && !current_user_can('sj_review_clinical')) return false;
         if(in_array($key,['_sj_review_state','_sj_approved_hash','_sj_approved_by','_sj_origin_id','_sj_base_hash','_sj_audit','_sj_approved_revision_id'],true)) return false;
         if($key==='_sj_verification' && $value==='verified' && !current_user_can('sj_review_clinical')) return false;
         if(in_array($key,['_sj_credentials','_sj_roles'],true) && !current_user_can('sj_review_clinical')) foreach((array)$value as $item) if(($item['verification']??'')==='verified') return false;
@@ -49,7 +63,7 @@ final class Editorial {
         $id=(int)$request['id'];
         if($id && self::locked($id)) return new \WP_Error('sj_published_locked','Create a clinical change draft to edit the published record.',['status'=>409]);
         if(($request['meta']['_sj_verification']??'')==='verified'&&!current_user_can('sj_review_clinical')) return new \WP_Error('sj_review_permission','Only a clinical reviewer can verify clinical facts.',['status'=>403]);
-        if($request['status']==='publish' && (($id&&self::clinical($id))||isset(Model::TYPES[$prepared->post_type??''])||!empty($request['meta']['_sj_clinical']))) return new \WP_Error('sj_review_required','Use clinical review and release for this record.',['status'=>409]);
+        if($request['status']==='publish' && (($id&&self::clinical($id))||isset(Model::TYPES[$prepared->post_type??''])||!empty($request['meta']['_sj_clinical'])||($request['template']??'')==='page-clinical')) return new \WP_Error('sj_review_required','Use clinical review and release for this record.',['status'=>409]);
         return $prepared;
     }
     public static function snapshot(int $id): array {
@@ -57,7 +71,7 @@ final class Editorial {
         foreach(array_keys(array_merge(Model::fields($post->post_type),Model::clinical_fields())) as $field) $meta['_sj_'.$field]=Model::get($id,$field);
         $terms=wp_get_object_terms($id,'sj_specialty',['fields'=>'ids']);
         ksort($meta);
-        return ['title'=>$post->post_title,'content'=>$post->post_content,'excerpt'=>$post->post_excerpt,'slug'=>$post->post_name,'meta'=>$meta,'specialties'=>is_wp_error($terms)?[]:$terms];
+        return ['title'=>$post->post_title,'content'=>$post->post_content,'excerpt'=>$post->post_excerpt,'slug'=>$post->post_name,'meta'=>$meta,'specialties'=>is_wp_error($terms)?[]:$terms,'template'=>(string)get_page_template_slug($id),'thumbnail'=>(int)get_post_thumbnail_id($id),'menu_order'=>(int)$post->menu_order];
     }
     public static function hash(int $id): string { return hash('sha256',wp_json_encode(self::snapshot($id))); }
     public static function internal(callable $action) { $previous=self::$promoting; self::$promoting=true; try { return $action(); } finally { self::$promoting=$previous; } }
@@ -66,7 +80,7 @@ final class Editorial {
     }
     public static function changed_meta($meta_id,int $id,string $key,$value): void {
         Model::invalidate();
-        if(!self::$promoting && str_starts_with($key,'_sj_') && !in_array($key,['_sj_review_state','_sj_audit'],true)) self::internal(static fn()=>update_post_meta($id,'_sj_review_state','draft'));
+        if(!self::$promoting && (str_starts_with($key,'_sj_') || (in_array($key,self::PRESENTATION_META,true) && self::clinical($id))) && !in_array($key,['_sj_review_state','_sj_audit'],true)) self::internal(static fn()=>update_post_meta($id,'_sj_review_state','draft'));
     }
     public static function routes(): void {
         register_rest_route('swatijha/v1','/editorial/(?P<id>\d+)/(?P<action>change|request|approve|release)',[
@@ -84,10 +98,15 @@ final class Editorial {
         return self::internal(function() use($id,$action,$input) {
             if($action==='change') {
                 if(get_post_status($id)!=='publish') return new \WP_Error('sj_not_published','Edit the existing draft.',['status'=>400]);
-                $p=get_post($id); $clone=wp_insert_post(['post_type'=>$p->post_type,'post_status'=>'draft','post_title'=>$p->post_title,'post_content'=>$p->post_content,'post_excerpt'=>$p->post_excerpt,'post_author'=>get_current_user_id()],true);
+                $p=get_post($id); $source=self::snapshot($id);
+                $clone=wp_insert_post(['post_type'=>$p->post_type,'post_status'=>'draft','post_title'=>$p->post_title,'post_content'=>$p->post_content,'post_excerpt'=>$p->post_excerpt,'menu_order'=>$p->menu_order,'post_author'=>get_current_user_id()],true);
                 if(is_wp_error($clone)) return $clone;
-                foreach(self::snapshot($id)['meta'] as $key=>$value) update_post_meta($clone,$key,$value);
-                wp_set_object_terms($clone,self::snapshot($id)['specialties'],'sj_specialty');
+                foreach($source['meta'] as $key=>$value) update_post_meta($clone,$key,$value);
+                wp_set_object_terms($clone,$source['specialties'],'sj_specialty');
+                if($source['template']) update_post_meta($clone,'_wp_page_template',$source['template']);
+                if($source['thumbnail']) update_post_meta($clone,'_thumbnail_id',$source['thumbnail']);
+                // The original may be clinical by template or binding; the draft must stay inside the workflow.
+                if(!isset(Model::TYPES[$p->post_type])) update_post_meta($clone,'_sj_clinical',true);
                 update_post_meta($clone,'_sj_origin_id',$id);
                 update_post_meta($clone,'_sj_base_hash',self::hash($id));
                 update_post_meta($clone,'_sj_review_state','draft');
@@ -103,6 +122,12 @@ final class Editorial {
                 if(Model::get($id,'review_state')!=='awaiting') return new \WP_Error('sj_request_first','Request clinical review before approval.',['status'=>409]);
                 $date=$input['reviewed_on']??''; $reviewer=(int)($input['reviewer_id']??0);
                 if(!$date || is_wp_error(Model::validate($id,get_post_type($id),'_sj_medically_reviewed_on',$date))) return new \WP_Error('sj_review_date','Enter the actual medical review date.',['status'=>400]);
+                $delegated=!empty($input['delegated']); $attestation='';
+                if($delegated) {
+                    if(empty(Graph::settings()['allow_delegated_review'])) return new \WP_Error('sj_delegation_disabled','Delegated review attestation is switched off in Practice settings.',['status'=>403]);
+                    $attestation=trim(sanitize_textarea_field((string)($input['attestation']??'')));
+                    if(mb_strlen($attestation)<20) return new \WP_Error('sj_attestation','Record who carried out the review, when and how (at least 20 characters).',['status'=>400]);
+                } elseif(!$reviewer || $reviewer!==self::linked_clinician()) return new \WP_Error('sj_reviewer_identity','You can approve only as the clinician linked to your own account. Ask an administrator to link your account, or record a delegated attestation if the practice permits it.',['status'=>403]);
                 if(!Model::verified($reviewer)||get_post_type($reviewer)!=='sj_clinician') {
                     // The initial clinician identity can be verified and reviewed in the same audited release.
                     if(get_post_type($id)!=='sj_clinician'||$reviewer!==$id||Model::get($id,'verification')!=='verified') return new \WP_Error('sj_reviewer','Choose a published verified clinician.',['status'=>400]);
@@ -110,24 +135,39 @@ final class Editorial {
                 if(isset(Model::TYPES[get_post_type($id)]) && (Model::get($id,'verification')!=='verified'||!Model::get($id,'source_url')||!Model::get($id,'verified_on'))) return new \WP_Error('sj_evidence','Verify the entity and supply its evidence source and verification date.',['status'=>400]);
                 if(get_post_type($id)==='sj_treatment'&&(!Model::get($id,'category')||!Model::get($id,'schema_type'))) return new \WP_Error('sj_classification','Select and review the treatment category and schema classification.',['status'=>400]);
                 update_post_meta($id,'_sj_reviewer_entity_id',$reviewer); update_post_meta($id,'_sj_medically_reviewed_on',$date);
-                update_post_meta($id,'_sj_review_state','approved'); update_post_meta($id,'_sj_approved_hash',self::hash($id)); update_post_meta($id,'_sj_approved_by',get_current_user_id()); self::audit($id,'approved');
+                update_post_meta($id,'_sj_review_state','approved'); update_post_meta($id,'_sj_approved_hash',self::hash($id)); update_post_meta($id,'_sj_approved_by',get_current_user_id());
+                self::audit($id,'approved',['reviewer_entity'=>$reviewer,'reviewer_name'=>get_the_title($reviewer),'reviewed_on'=>$date,'mode'=>$delegated?'delegated':'self','attestation'=>$attestation]);
                 return ['id'=>$id,'state'=>'approved'];
             }
             if($action==='release') {
                 if(Model::get($id,'review_state')!=='approved'||!hash_equals((string)Model::get($id,'approved_hash'),self::hash($id))) return new \WP_Error('sj_stale_approval','The current content has not been approved.',['status'=>409]);
+                $override=trim(sanitize_textarea_field((string)($input['override_reason']??'')));
+                if((int)Model::get($id,'approved_by')===get_current_user_id()) {
+                    if(!current_user_can('manage_options')||mb_strlen($override)<10) return new \WP_Error('sj_separation','The person who approved this revision cannot also release it. Ask another publisher, or an administrator can override with a recorded reason.',['status'=>409]);
+                } else $override='';
                 $origin=(int)Model::get($id,'origin_id'); $target=$origin?:$id;
                 if($origin && (!get_post($origin)||!hash_equals((string)Model::get($id,'base_hash'),self::hash($origin)))) return new \WP_Error('sj_conflict','The published record changed after this draft was created.',['status'=>409]);
                 // Database advisory lock is an atomic option insertion and works on MySQL and SQLite.
                 $lock='sj_release_lock_'.$target;
-                if(!add_option($lock,time(),'',false)) return new \WP_Error('sj_busy','A release is already in progress.',['status'=>409]);
+                if(!add_option($lock,time(),'',false)) {
+                    // A fatal error can leave the lock behind; locks older than LOCK_TTL are treated as abandoned.
+                    $started=(int)get_option($lock);
+                    if(time()-$started<self::LOCK_TTL) return new \WP_Error('sj_busy','A release of this record is already in progress. Try again in a few minutes.',['status'=>409]);
+                    delete_option($lock);
+                    if(!add_option($lock,time(),'',false)) return new \WP_Error('sj_busy','A release of this record is already in progress.',['status'=>409]);
+                }
                 global $wpdb;
                 $wpdb->query('START TRANSACTION');
                 try {
                     clean_post_cache($target);
                     if($origin && !hash_equals((string)Model::get($id,'base_hash'),self::hash($origin))) throw new \RuntimeException('The published record changed while acquiring the release lock.');
                     wp_save_post_revision($target); $snapshot=self::snapshot($id); $draft=get_post($id);
-                    $result=wp_update_post(['ID'=>$target,'post_title'=>$draft->post_title,'post_content'=>$draft->post_content,'post_excerpt'=>$draft->post_excerpt,'post_status'=>'publish'],true);
+                    $result=wp_update_post(['ID'=>$target,'post_title'=>$draft->post_title,'post_content'=>$draft->post_content,'post_excerpt'=>$draft->post_excerpt,'menu_order'=>$draft->menu_order,'post_status'=>'publish'],true);
                     if(is_wp_error($result)) throw new \RuntimeException($result->get_error_message());
+                    if($origin) {
+                        if($snapshot['template']) update_post_meta($target,'_wp_page_template',$snapshot['template']); else delete_post_meta($target,'_wp_page_template');
+                        if($snapshot['thumbnail']) update_post_meta($target,'_thumbnail_id',$snapshot['thumbnail']); else delete_post_meta($target,'_thumbnail_id');
+                    }
                     if($origin) foreach($snapshot['meta'] as $key=>$value) update_post_meta($target,$key,$value);
                     wp_set_object_terms($target,$snapshot['specialties'],'sj_specialty');
                     foreach(['review_state','approved_by','medically_reviewed_on','reviewer_entity_id'] as $field) update_post_meta($target,'_sj_'.$field,Model::get($id,$field));
@@ -135,7 +175,7 @@ final class Editorial {
                     $revision=wp_save_post_revision($target);
                     if(!$revision) { $revisions=wp_get_post_revisions($target,['numberposts'=>1]); $revision=$revisions?(int)array_key_first($revisions):0; }
                     update_post_meta($target,'_sj_approved_revision_id',(int)$revision);
-                    self::audit($target,'released');
+                    self::audit($target,'released',['approved_by'=>(int)Model::get($id,'approved_by'),'reviewer_entity'=>(int)Model::get($id,'reviewer_entity_id'),'from_draft'=>$origin?$id:0,'override_reason'=>$override]);
                     if($origin) { wp_update_post(['ID'=>$id,'post_status'=>'private']); update_post_meta($id,'_sj_review_state','released'); }
                     if($wpdb->last_error) throw new \RuntimeException('Database error during release.');
                     $wpdb->query('COMMIT');
@@ -147,8 +187,9 @@ final class Editorial {
             return new \WP_Error('sj_action','Unknown editorial action.',['status'=>400]);
         });
     }
-    private static function audit(int $id,string $event): void {
-        $log=Model::get($id,'audit',[]); $log[]=['event'=>$event,'user'=>get_current_user_id(),'at'=>gmdate('c'),'hash'=>self::hash($id)]; update_post_meta($id,'_sj_audit',$log);
+    private static function audit(int $id,string $event,array $detail=[]): void {
+        $user=wp_get_current_user();
+        $log=Model::get($id,'audit',[]); $log[]=array_merge(['event'=>$event,'user'=>$user->ID,'user_name'=>$user->display_name,'linked_clinician'=>self::linked_clinician(),'at'=>gmdate('c'),'hash'=>self::hash($id)],array_filter($detail,static fn($v)=>$v!==''&&$v!==0)); update_post_meta($id,'_sj_audit',$log);
     }
     private static function flag_dependants(int $id): void {
         foreach(get_posts(['post_type'=>['page','post'],'post_status'=>'publish','numberposts'=>1000]) as $page) {

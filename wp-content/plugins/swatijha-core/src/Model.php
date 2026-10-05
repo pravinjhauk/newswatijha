@@ -10,6 +10,20 @@ final class Model {
         'sj_research' => 'Research', 'sj_reference' => 'References',
         'sj_resource' => 'Resources', 'sj_review' => 'Reviews',
     ];
+    public const SCHEMA_VERSION = 2;
+    public const ADMIN_CAPS = ['sj_edit_entities','sj_review_clinical','sj_publish_clinical','sj_migrate'];
+    /** Role definitions are reconciled on every schema upgrade, not only on activation. */
+    public const ROLES = [
+        'sj_content_editor' => ['Clinical content editor', ['read','edit_posts','edit_others_posts','edit_published_posts','edit_pages','edit_others_pages','edit_published_pages','upload_files','sj_edit_entities']],
+        'sj_clinical_reviewer' => ['Clinical reviewer', ['read','edit_posts','edit_others_posts','edit_pages','edit_others_pages','sj_edit_entities','sj_review_clinical']],
+        'sj_publisher' => ['Clinical publisher', ['read','edit_posts','edit_others_posts','edit_published_posts','edit_pages','edit_others_pages','edit_published_pages','publish_pages','publish_posts','upload_files','sj_edit_entities','sj_publish_clinical']],
+        'sj_migration_operator' => ['Migration operator', ['read','sj_migrate']],
+    ];
+    /** Fields written only by the approval workflow; hidden from editors and importers. */
+    public const WORKFLOW_FIELDS = ['reviewer_entity_id','medically_reviewed_on'];
+    /** Page-level fields an approved migration manifest may carry. */
+    public const IMPORTABLE_PAGE_FIELDS = ['seo_title','seo_description','robots'];
+    private static ?array $landing = null;
     public static function fields(string $type): array {
         $common = [
             'uuid' => ['string', 'Stable identifier'],
@@ -34,7 +48,7 @@ final class Model {
         return isset(self::TYPES[$type]) ? array_merge($common, $specific[$type] ?? []) : [];
     }
     public static function clinical_fields(): array {
-        return ['clinical'=>['boolean','Clinical information'], 'author_entity_ids'=>['ids:sj_clinician','Clinical authors'], 'reviewer_entity_id'=>['id:sj_clinician','Clinical reviewer'], 'medically_reviewed_on'=>['date','Medical review date'], 'review_due_on'=>['date','Next review due'], 'reference_ids'=>['ids:sj_reference,sj_publication','References'], 'reference_sections'=>['references','Section citations'], 'seo_description'=>['string','Search description']];
+        return ['clinical'=>['boolean','Clinical information'], 'author_entity_ids'=>['ids:sj_clinician','Clinical authors'], 'reviewer_entity_id'=>['id:sj_clinician','Clinical reviewer'], 'medically_reviewed_on'=>['date','Medical review date'], 'review_due_on'=>['date','Next review due'], 'reference_ids'=>['ids:sj_reference,sj_publication','References'], 'reference_sections'=>['references','Section citations'], 'seo_description'=>['string','Search description'], 'seo_title'=>['string','Search title'], 'robots'=>['enum:index,noindex','Search indexing'], 'social_image_id'=>['id:attachment','Social sharing image']];
     }
     public static function schema(string $kind): array {
         if (str_starts_with($kind, 'enum:')) return ['type'=>'string','enum'=>array_merge([''],explode(',',substr($kind,5)))];
@@ -51,6 +65,7 @@ final class Model {
         return ['type'=>'string'];
     }
     public static function boot(): void {
+        add_action('init',[self::class,'upgrade'],1);
         add_action('init',[self::class,'register']);
         add_filter('pre_option_show_avatars','__return_zero');
         remove_action('wp_head','print_emoji_detection_script',7);
@@ -64,27 +79,45 @@ final class Model {
         add_action('untrashed_post', [self::class,'invalidate']);
     }
     public static function activate(): void {
-        $caps = ['sj_edit_entities','sj_review_clinical','sj_publish_clinical','sj_migrate'];
-        foreach ($caps as $cap) get_role('administrator')?->add_cap($cap);
-        add_role('sj_content_editor','Clinical content editor',['read'=>true,'edit_posts'=>true,'edit_pages'=>true,'edit_others_pages'=>true,'edit_published_pages'=>true,'upload_files'=>true,'sj_edit_entities'=>true]);
-        add_role('sj_clinical_reviewer','Clinical reviewer',['read'=>true,'edit_posts'=>true,'edit_pages'=>true,'edit_others_pages'=>true,'sj_edit_entities'=>true,'sj_review_clinical'=>true]);
-        add_role('sj_publisher','Clinical publisher',['read'=>true,'edit_posts'=>true,'edit_pages'=>true,'edit_others_pages'=>true,'publish_pages'=>true,'publish_posts'=>true,'sj_edit_entities'=>true,'sj_publish_clinical'=>true]);
-        add_role('sj_migration_operator','Migration operator',['read'=>true,'sj_migrate'=>true]);
-        add_option('sj_practice',['version'=>1,'origin'=>'https://www.swatijha.com','primary_clinician'=>0,'contact_page'=>0,'booking_page'=>0,'telephone'=>'','email'=>'','practice_name'=>'','practice_verified'=>false], '', false);
-        update_option('sj_schema_version',1,false);
+        self::sync_roles();
+        add_option('sj_practice',['version'=>1,'origin'=>'https://www.swatijha.com','primary_clinician'=>0,'contact_page'=>0,'booking_page'=>0,'telephone'=>'','email'=>'','practice_name'=>'','practice_verified'=>false,'allow_delegated_review'=>false], '', false);
+        update_option('sj_schema_version',self::SCHEMA_VERSION,false);
+    }
+    /** Runs on every request; does work only when the stored schema version is behind the code. */
+    public static function upgrade(): void {
+        if ((int)get_option('sj_schema_version',0) >= self::SCHEMA_VERSION) return;
+        self::sync_roles();
+        update_option('sj_schema_version',self::SCHEMA_VERSION,false);
+    }
+    public static function sync_roles(): void {
+        $admin = get_role('administrator');
+        foreach (self::ADMIN_CAPS as $cap) $admin?->add_cap($cap);
+        foreach (self::ROLES as $slug=>[$label,$caps]) {
+            $role = get_role($slug);
+            if (!$role) { add_role($slug,$label,array_fill_keys($caps,true)); continue; }
+            foreach ($caps as $cap) if (empty($role->capabilities[$cap])) $role->add_cap($cap);
+            foreach (array_keys($role->capabilities) as $cap) if (!in_array($cap,$caps,true)) $role->remove_cap($cap);
+        }
     }
     public static function register(): void {
         foreach (self::TYPES as $type=>$label) {
-            register_post_type($type,['labels'=>['name'=>$label,'singular_name'=>rtrim($label,'s')], 'public'=>false,'show_ui'=>true,'show_in_rest'=>true,'show_in_menu'=>'sj-practice','rewrite'=>false,'query_var'=>false,'supports'=>['title','editor','revisions','custom-fields'], 'capabilities'=>['edit_posts'=>'sj_edit_entities','edit_others_posts'=>'sj_edit_entities','publish_posts'=>'sj_publish_clinical','read_private_posts'=>'sj_edit_entities','delete_posts'=>'sj_edit_entities','create_posts'=>'sj_edit_entities'],'map_meta_cap'=>true]);
+            register_post_type($type,['labels'=>['name'=>$label,'singular_name'=>rtrim($label,'s')], 'public'=>false,'show_ui'=>true,'show_in_rest'=>true,'show_in_menu'=>'sj-practice','rewrite'=>false,'query_var'=>false,'supports'=>['title','editor','revisions','custom-fields'], 'capabilities'=>self::entity_caps(),'map_meta_cap'=>true]);
         }
         register_taxonomy('sj_specialty',array_keys(self::TYPES),['label'=>'Specialties','public'=>false,'show_ui'=>true,'show_in_rest'=>true,'hierarchical'=>true,'rewrite'=>false,'capabilities'=>['manage_terms'=>'sj_edit_entities','edit_terms'=>'sj_edit_entities','delete_terms'=>'sj_edit_entities','assign_terms'=>'sj_edit_entities']]);
         foreach (array_merge(['page','post'],array_keys(self::TYPES)) as $type) {
             add_post_type_support($type,'custom-fields');
             foreach (array_merge(self::fields($type),self::clinical_fields()) as $field=>[$kind,$label]) {
                 $schema=self::schema($kind);
-                register_post_meta($type,'_sj_'.$field,['single'=>true,'type'=>$schema['type'],'show_in_rest'=>['schema'=>$schema],'revisions_enabled'=>true,'auth_callback'=>static fn($allowed,$key,$id)=>current_user_can('edit_post',$id),'sanitize_callback'=>static fn($value)=>self::sanitize($value)]);
+                register_post_meta($type,'_sj_'.$field,['single'=>true,'type'=>$schema['type'],'show_in_rest'=>['schema'=>$schema+['context'=>['edit']]],'revisions_enabled'=>true,'auth_callback'=>static fn($allowed,$key,$id)=>current_user_can('edit_post',$id),'sanitize_callback'=>static fn($value)=>self::sanitize($value)]);
             }
         }
+    }
+    /** Every primitive post capability maps to an owned capability, so custom roles can work on published records. */
+    public static function entity_caps(): array {
+        $caps = array_fill_keys(['edit_posts','edit_others_posts','edit_private_posts','edit_published_posts','read_private_posts','delete_posts','delete_private_posts','delete_published_posts','delete_others_posts','create_posts'],'sj_edit_entities');
+        $caps['publish_posts'] = 'sj_publish_clinical';
+        $caps['read'] = 'read';
+        return $caps;
     }
     public static function sanitize($value) {
         if (is_array($value)) return array_map([self::class,'sanitize'],$value);
@@ -153,10 +186,18 @@ final class Model {
         foreach(self::catalogue() as $entity) if((int)self::get($entity->ID,'landing_page_id')===$page) return $entity;
         return null;
     }
+    /** Entities (any status) that name this page as their landing page. */
+    public static function landing_entities(int $page): array {
+        if (self::$landing === null) {
+            self::$landing = [];
+            foreach (self::catalogue(false) as $entity) if ($landing=(int)self::get($entity->ID,'landing_page_id')) self::$landing[$landing][] = $entity->ID;
+        }
+        return self::$landing[$page] ?? [];
+    }
     public static function inverse(int $target): array {
         $index=get_transient('sj_relation_index');
         if(!is_array($index)) { $index=[]; foreach(self::catalogue() as $entity) foreach(self::fields($entity->post_type) as $field=>[$kind]) if(str_starts_with($kind,'ids:')||str_starts_with($kind,'id:')) foreach((array)self::get($entity->ID,$field,[]) as $id) if($id) $index[(int)$id][]=$entity->ID; set_transient('sj_relation_index',$index,HOUR_IN_SECONDS); }
         return array_values(array_unique($index[$target]??[]));
     }
-    public static function invalidate(): void { delete_transient('sj_relation_index'); }
+    public static function invalidate(): void { delete_transient('sj_relation_index'); self::$landing = null; }
 }

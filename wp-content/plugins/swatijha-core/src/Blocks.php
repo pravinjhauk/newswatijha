@@ -7,7 +7,7 @@ final class Blocks {
     public static function register(): void {
         $asset=is_file(SJ_CORE_PATH.'/build/editor.asset.php')?require SJ_CORE_PATH.'/build/editor.asset.php':['dependencies'=>[],'version'=>'0.1.0'];
         wp_register_script('sj-editor',plugins_url('build/editor.js',SJ_CORE_FILE),$asset['dependencies'],$asset['version'],true);
-        wp_register_style('sj-blocks',plugins_url('build/blocks.css',SJ_CORE_FILE),[], '0.1.0');
+        wp_register_style('sj-blocks',plugins_url('build/blocks.css',SJ_CORE_FILE),[], '0.2.0');
         foreach(self::BLOCKS as $name=>$title) register_block_type(SJ_CORE_PATH.'/blocks/'.$name,['render_callback'=>static fn($attrs,$content,$block)=>self::render($name,$attrs,$block)]);
     }
     public static function render(string $name,array $attrs,$block=null): string {

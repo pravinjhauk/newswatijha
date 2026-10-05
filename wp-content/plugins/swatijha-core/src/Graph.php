@@ -5,8 +5,25 @@ final class Graph {
     public static function boot(): void {
         add_action('wp_head',[self::class,'head'],5);
         add_filter('get_canonical_url',static fn($url,$post)=>self::canonical($post->ID),10,2);
-        add_filter('wp_robots',static function($robots){ if(wp_get_environment_type()!=='production') { $robots['noindex']=true; $robots['nofollow']=true; unset($robots['max-image-preview']); } return $robots; });
+        add_filter('wp_robots',[self::class,'robots']);
+        add_filter('pre_get_document_title',[self::class,'document_title'],20);
         add_filter('wp_sitemaps_post_types',static function($types){ foreach(array_keys(Model::TYPES) as $type) unset($types[$type]); return $types; });
+        // Pages marked noindex never appear in the XML sitemap.
+        add_filter('wp_sitemaps_posts_query_args',static function($args,$type){
+            if(in_array($type,['page','post'],true)) $args['meta_query'][]=['relation'=>'OR',['key'=>'_sj_robots','compare'=>'NOT EXISTS'],['key'=>'_sj_robots','value'=>'noindex','compare'=>'!=']];
+            return $args;
+        },10,2);
+    }
+    public static function robots(array $robots): array {
+        if(wp_get_environment_type()!=='production') { $robots['noindex']=true; $robots['nofollow']=true; unset($robots['max-image-preview']); return $robots; }
+        if(is_singular(['page','post']) && Model::get(get_queried_object_id(),'robots')==='noindex') { $robots['noindex']=true; $robots['follow']=true; unset($robots['max-image-preview'],$robots['index']); }
+        return $robots;
+    }
+    /** Imported or edited search title replaces "Post title – Site name" when set. */
+    public static function title(int $id): string { return (string)(Model::get($id,'seo_title') ?: get_the_title($id)); }
+    public static function document_title($title) {
+        if(is_singular(['page','post']) && ($custom=Model::get(get_queried_object_id(),'seo_title'))) return $custom;
+        return $title;
     }
     public static function settings(): array { return (array)get_option('sj_practice',[]); }
     public static function origin(): string { return rtrim(self::settings()['origin']??'https://www.swatijha.com','/'); }
@@ -107,10 +124,20 @@ final class Graph {
         if(!is_singular(['page','post'])) return;
         $id=get_queried_object_id(); $description=Model::get($id,'seo_description');
         if($description) echo '<meta name="description" content="'.esc_attr($description).'">'."\n";
-        echo '<meta property="og:title" content="'.esc_attr(get_the_title($id)).'">'."\n";
+        $image=(int)Model::get($id,'social_image_id'); $image_url=$image?wp_get_attachment_image_url($image,'full'):'';
+        echo '<meta property="og:locale" content="en_GB">'."\n";
+        echo '<meta property="og:site_name" content="'.esc_attr(get_bloginfo('name')).'">'."\n";
+        echo '<meta property="og:title" content="'.esc_attr(self::title($id)).'">'."\n";
         echo '<meta property="og:url" content="'.esc_url(self::canonical($id)).'">'."\n";
-        echo '<meta property="og:type" content="website">'."\n";
+        echo '<meta property="og:type" content="'.(get_post_type($id)==='post'?'article':'website').'">'."\n";
         if($description) echo '<meta property="og:description" content="'.esc_attr($description).'">'."\n";
+        if($image_url) {
+            $meta=wp_get_attachment_metadata($image); $alt=(string)get_post_meta($image,'_wp_attachment_image_alt',true);
+            echo '<meta property="og:image" content="'.esc_url($image_url).'">'."\n";
+            if(!empty($meta['width'])&&!empty($meta['height'])) echo '<meta property="og:image:width" content="'.(int)$meta['width'].'">'."\n".'<meta property="og:image:height" content="'.(int)$meta['height'].'">'."\n";
+            if($alt) echo '<meta property="og:image:alt" content="'.esc_attr($alt).'">'."\n";
+        }
+        echo '<meta name="twitter:card" content="'.($image_url?'summary_large_image':'summary').'">'."\n";
         $graph=self::graph($id);
         if($graph) echo '<script type="application/ld+json">'.wp_json_encode($graph,JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>'."\n";
     }

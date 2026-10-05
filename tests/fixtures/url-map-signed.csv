@@ -1,0 +1,8 @@
+id,section,old_url,live_status,live_robots,live_title,recommended_disposition,new_url,redirect_code,rationale,evidence_before_signoff,decision_owner,approval,approved_by,approved_on,notes
+T01,Pages,https://www.swatijha.com/,200,,,KEEP,https://www.swatijha.com/,none,,,,APPROVED,Synthetic fixture,2026-10-05,
+T02,Pages,https://www.swatijha.com/old-page/,200,,,301,https://www.swatijha.com/new-page/,301,,,,APPROVED,Synthetic fixture,2026-10-05,
+T03,Legacy,https://www.swatijha.com/?legacy-footer=home,200,,,410 GONE,,410,,,,APPROVED,Synthetic fixture,2026-10-05,
+T04,Legacy,https://www.swatijha.com/legacy.archive/blog/,200,,,410 GONE,,410,,,,APPROVED,Synthetic fixture,2026-10-05,
+T05,Host,http://swatijha.com/{path},301,,,"301 to https://www.swatijha.com/{path}",https://www.swatijha.com/{path},301,,,,APPROVED,Synthetic fixture,2026-10-05,
+T06,System,https://www.swatijha.com/xmlrpc.php,,,,BLOCK (403) at server,,403,,,,APPROVED,Synthetic fixture,2026-10-05,
+T07,Media,https://www.swatijha.com/wp-content/uploads/… (see inventory),,,,KEEP same paths,,,,,,APPROVED,Synthetic fixture,2026-10-05,

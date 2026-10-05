@@ -57,7 +57,7 @@ final class Migration {
                 foreach($records as $record) {
                     $id=$mapping[$record['uuid']];
                     foreach(($record['meta']??[]) as $field=>$value) {
-                        $kind=Model::fields($record['type'])[$field][0]??null;
+                        $kind=Model::fields($record['type'])[$field][0]??(in_array($field,Model::IMPORTABLE_PAGE_FIELDS,true)?Model::clinical_fields()[$field][0]:null);
                         if(!$kind||in_array($field,['uuid','verification'],true)) continue;
                         if(str_starts_with($kind,'ids:')) $value=array_map(static function($uuid) use($mapping){ if(!isset($mapping[$uuid])) throw new \RuntimeException('Unresolved relationship UUID.'); return $mapping[$uuid]; },$value);
                         elseif(str_starts_with($kind,'id:')&&is_array($value)) { $uuid=$value['uuid']??''; if(!$uuid||!isset($mapping[$uuid])) throw new \RuntimeException('Page/media bindings require an explicit approved local mapping.'); $value=$mapping[$uuid]; }

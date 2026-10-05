@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import path from "node:path";
+const { version } = JSON.parse(await fs.readFile("package.json", "utf8"));
 await fs.mkdir("dist", { recursive: true });
 const revision = execFileSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
@@ -11,7 +12,7 @@ for (const [folder, name] of [
   ["themes", "swatijha-theme"],
   ["plugins", "swatijha-core"],
 ]) {
-  const target = path.resolve(`dist/${name}-0.1.0.zip`);
+  const target = path.resolve(`dist/${name}-${version}.zip`);
   await fs.rm(target, { force: true });
   execFileSync("zip", ["-qr", target, name, "-x", "*/.DS_Store"], {
     cwd: `wp-content/${folder}`,
@@ -25,6 +26,6 @@ for (const [folder, name] of [
 }
 await fs.writeFile(
   "dist/release-manifest.json",
-  JSON.stringify({ version: "0.1.0", revision, artifacts }, null, 2),
+  JSON.stringify({ version, revision, artifacts }, null, 2),
 );
 console.log(artifacts);

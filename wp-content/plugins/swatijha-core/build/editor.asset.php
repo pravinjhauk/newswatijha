@@ -9,5 +9,5 @@
 		'wp-element',
 		'wp-plugins'
 	),
-	'version' => '1326f06105d815896657'
+	'version' => 'e8a0f3da853520d3bf68'
 );

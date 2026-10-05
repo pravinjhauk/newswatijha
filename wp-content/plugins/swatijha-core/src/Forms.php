@@ -4,7 +4,6 @@ defined('ABSPATH') || exit;
 final class Forms {
     public static function boot(): void {
         add_action('admin_post_sj_enquiry',[self::class,'submit']); add_action('admin_post_nopriv_sj_enquiry',[self::class,'submit']);
-        add_filter('pre_wp_mail',static fn($result,$atts)=>wp_get_environment_type()!=='production'?false:$result,99,2);
     }
     public static function enabled(): bool { return wp_get_environment_type()==='production' && (bool)apply_filters('sj_enquiry_transport_ready',false); }
     public static function render(): string {

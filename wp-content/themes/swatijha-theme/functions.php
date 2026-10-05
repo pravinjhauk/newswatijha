@@ -9,8 +9,8 @@ add_action('after_setup_theme',static function(){
     remove_theme_support('core-block-patterns');
 });
 add_action('wp_enqueue_scripts',static function(){
-    wp_enqueue_style('sj-fonts',get_theme_file_uri('assets/fonts/fonts.css'),[], '0.1.0');
-    wp_enqueue_style('sj-theme',get_theme_file_uri('assets/css/theme.css'),['sj-fonts'], '0.1.0');
+    wp_enqueue_style('sj-fonts',get_theme_file_uri('assets/fonts/fonts.css'),[], '0.2.0');
+    wp_enqueue_style('sj-theme',get_theme_file_uri('assets/css/theme.css'),['sj-fonts'], '0.2.0');
 });
 add_action('init',static function(){
     register_block_pattern_category('swatijha',['label'=>'Swati Jha']);
